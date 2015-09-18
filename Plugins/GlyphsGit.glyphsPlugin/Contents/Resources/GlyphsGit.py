@@ -84,6 +84,7 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 			os.chdir(os.path.dirname(p))
 			if not os.path.isdir("./git"):
 				self._runGit(["init"])
+            self._runGit(["checkout", "master"]) 
 			self._runGit(["add", os.path.basename(p) ])
 			self.setupStupidMessage()
 			NSApp.beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo_(
