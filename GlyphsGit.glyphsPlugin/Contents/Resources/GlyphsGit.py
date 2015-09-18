@@ -122,7 +122,7 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 		self.sheetTextarea.setStringValue_(random.choice(stupidMessages))
 
 	@objc.IBAction
-	def buttonPushed_ (self, sender):
+	def commitPushed_ (self, sender):
 		try:
 			self._runGit(["commit", "-m", self.sheetTextarea.stringValue() ])
 			os.chdir(self.oldCwd)
@@ -130,7 +130,15 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 			self.logToConsole( "Git failed (probably no change since last commit): %s" % str(e) )
 		try:
 			NSApp.endSheet_(self.sheetPanel())
-			self.sheetPanel().orderOut_(NSApplication.sharedApplication().mainWindow())
+			self.sheetPanel().orderOut_(self)
+		except Exception as e:
+			self.logToConsole( "buttonPushed_: %s" % str(e) )
+	
+	@objc.IBAction
+	def canelPushed_ (self, sender):
+		try:
+			NSApp.endSheet_(self.sheetPanel())
+			self.sheetPanel().orderOut_(self)
 		except Exception as e:
 			self.logToConsole( "buttonPushed_: %s" % str(e) )
 

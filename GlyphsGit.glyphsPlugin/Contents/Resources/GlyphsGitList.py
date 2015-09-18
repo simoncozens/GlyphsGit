@@ -28,7 +28,7 @@ class GitList(object):
       os.chdir(self.oldCwd)
       self.w = Window((400, 400))
       self.w.myList = List((0, 0, -0, -0), lines,
-        columnDescriptions=[{"title": "Revision"}, {"title": "Date"}, {"title": "Changes"}],
+        columnDescriptions=[{"title": "Revision", "width": 70}, {"title": "Date", "width": 100}, {"title": "Changes", "width": 228}],
         allowsMultipleSelection=False,
                    doubleClickCallback=self.selectionCallback)
       self.w.open()
