@@ -11,8 +11,6 @@ Double click the plugin or move it into the Glyphs plugin folder. Now reload gly
 
 ## How to use
 
-Set up a repository for your font files.
-
 Now, every time you save your font, you will be prompted to fill in a summary of the changes you made.
 
 To return to a previous state of the font, choose "View revision history" from the File menu, and double-click on a saved version. You'll be instantly taken back to how the font used to look.
