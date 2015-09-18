@@ -8,6 +8,8 @@ from AppKit import *
 import sys, os, re
 from distutils import spawn
 import random
+import GlyphsGitList
+
 
 MainBundle = NSBundle.mainBundle()
 path = MainBundle.bundlePath() + "/Contents/Scripts"
@@ -50,6 +52,20 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 			NSBundle.loadNibNamed_owner_( "GlyphsGitDialog", self )
 			selector = objc.selector( self.documentWasSaved, signature="v@:@" )
 			NSNotificationCenter.defaultCenter().addObserver_selector_name_object_( self, selector, "GSDocumentWasSavedSuccessfully", None )
+			
+			mainMenu = NSApplication.sharedApplication().mainMenu()
+			s = objc.selector(self.showRevisions,signature='v@:')
+			self.revisionMenuItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("View revision history", s, "" )
+			self.revisionMenuItem.setTarget_(self)
+			index = 0
+			numberOfSeperators = 0
+			for menuItem in mainMenu.itemAtIndex_(1).submenu().itemArray():
+				if menuItem.isSeparatorItem():
+					numberOfSeperators += 1
+				if numberOfSeperators == 2:
+					break
+				index += 1;
+			mainMenu.itemAtIndex_(1).submenu().insertItem_atIndex_(self.revisionMenuItem, index)
 			return None
 		except Exception, err:
 			self.logToConsole( "init: %s" % traceback.format_exc() )
@@ -84,7 +100,7 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 			os.chdir(os.path.dirname(p))
 			if not os.path.isdir("./git"):
 				self._runGit(["init"])
-            self._runGit(["checkout", "master"]) 
+			self._runGit(["checkout", "master"]) 
 			self._runGit(["add", os.path.basename(p) ])
 			self.setupStupidMessage()
 			NSApp.beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo_(
@@ -142,7 +158,19 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 	@objc.signature('v@:@ii')
 	def alertDidEnd_returnCode_contextInfo_(self, sheet, returnCode, info):
 		return
-
+	
+	def validateMenuItem_(self, item):
+		print "__validateMenuItem_1"
+		if self.revisionMenuItem == item:
+			# check if current font is under version control
+			# if not, return False
+			print "__validateMenuItem_2"
+			pass
+		return True
+	
+	def showRevisions(self, sender):
+		GlyphsGitList.GitList()
+		
 	def logToConsole( self, message ):
 		"""
 		The variable 'message' will be passed to Console.app.

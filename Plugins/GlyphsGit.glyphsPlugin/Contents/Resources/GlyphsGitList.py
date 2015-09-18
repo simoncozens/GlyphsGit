@@ -7,29 +7,35 @@ from vanilla import *
 from distutils import spawn
 import sys, os, re
 import subprocess
+from GlyphsApp import Glyphs
 
 class GitList(object):
   def __init__(self):
     self.oldCwd = os.getcwd()
     p = Glyphs.font.filepath
-    os.chdir(os.path.dirname(p))
-    if not os.path.isdir("./git"):
-      self._runGit(["init"])
-    self._runGit(["checkout", "master"])
-    process = subprocess.Popen(["git", "log", "--pretty=format:%h,%cr,%s","--abbrev-commit"], stdout=subprocess.PIPE)
-    result = process.communicate()[0]
-    lines = []
-    for x in result.split("\n"):
-      line = x.split(",")
-      lines.append({"Revision": line[0], "Date": line[1], "Changes": line[2]})
-    self.lines = lines
-    os.chdir(self.oldCwd)
-    self.w = Window((400, 400))
-    self.w.myList = List((0, 0, -0, -0), lines,
-      columnDescriptions=[{"title": "Revision"}, {"title": "Date"}, {"title": "Changes"}],
-      allowsMultipleSelection=False,
-                 doubleClickCallback=self.selectionCallback)
-    self.w.open()
+    try:
+      os.chdir(os.path.dirname(p))
+      if not os.path.isdir("./git"):
+        self._runGit(["init"])
+      self._runGit(["checkout", "master"])
+      process = subprocess.Popen(["git", "log", "--pretty=format:%h,%cr,%s","--abbrev-commit"], stdout=subprocess.PIPE)
+      result = process.communicate()[0]
+      lines = []
+      for x in result.split("\n"):
+        line = x.split(",")
+        lines.append({"Revision": line[0], "Date": line[1], "Changes": line[2]})
+      self.lines = lines
+      os.chdir(self.oldCwd)
+      self.w = Window((400, 400))
+      self.w.myList = List((0, 0, -0, -0), lines,
+        columnDescriptions=[{"title": "Revision"}, {"title": "Date"}, {"title": "Changes"}],
+        allowsMultipleSelection=False,
+                   doubleClickCallback=self.selectionCallback)
+      self.w.open()
+      # TODO: Better error reprorting, especially if the file is not under verison control
+    except:
+      import traceback
+      print traceback.format_exc()
 
   def _runGit (self, args):
     gitPath = spawn.find_executable("git")
@@ -58,4 +64,3 @@ class GitList(object):
     except Exception as e:
       print( e )
 
-GitList()
