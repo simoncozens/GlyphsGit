@@ -1,3 +1,4 @@
+from __future__ import print_function
 #MenuTitle: View revision history
 # -*- coding: utf-8 -*-
 __doc__="""
@@ -35,7 +36,7 @@ class GitList(object):
       # TODO: Better error reprorting, especially if the file is not under verison control
     except:
       import traceback
-      print traceback.format_exc()
+      print(traceback.format_exc())
 
   def _runGit (self, args):
     gitPath = spawn.find_executable("git")

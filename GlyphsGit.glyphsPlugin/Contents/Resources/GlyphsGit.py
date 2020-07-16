@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+from __future__ import print_function
 import objc
 import traceback
 from Foundation import *
@@ -14,26 +15,26 @@ import GlyphsGitList
 MainBundle = NSBundle.mainBundle()
 path = MainBundle.bundlePath() + "/Contents/Scripts"
 if not path in sys.path:
-	sys.path.append( path )
+	sys.path.append(path)
 
 import GlyphsApp
+from GlyphsApp.plugins import GeneralPlugin
 
 Glyphs = GlyphsApp.Glyphs
-GlyphsPluginProtocol = objc.protocolNamed( "GlyphsPlugin" )
+GlyphsPluginProtocol = objc.protocolNamed("GlyphsPlugin")
 
 class Alert(object):
-		
-		def __init__(self, messageText):
-				super(Alert, self).__init__()
-				self.messageText = messageText
-				self.informativeText = ""
-				self.buttons = []
-		
-		def displayAlert(self):
-				NSApp.activateIgnoringOtherApps_(True)
-				self.buttonPressed = alert.runModal()
+	def __init__(self, messageText):
+		super(Alert, self).__init__()
+		self.messageText = messageText
+		self.informativeText = ""
+		self.buttons = []
 
-class glyphsGit ( NSObject, GlyphsPluginProtocol ):
+	def displayAlert(self):
+		NSApp.activateIgnoringOtherApps_(True)
+		self.buttonPressed = alert.runModal()
+
+class glyphsGit (GeneralPlugin):
 	sheetLabel = objc.IBOutlet()
 	_view = objc.IBOutlet()
 	sheetTextarea = objc.IBOutlet()
@@ -43,19 +44,19 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 	objc.synthesize("sheetPanel")
 	oldCwd = ""
 
-	def loadPlugin( self ):
+	def loadPlugin(self):
 		"""
 		You can add an observer like in the example.
 		Do all initializing here.
 		"""
 		try:
-			NSBundle.loadNibNamed_owner_( "GlyphsGitDialog", self )
-			selector = objc.selector( self.documentWasSaved, signature="v@:@" )
-			NSNotificationCenter.defaultCenter().addObserver_selector_name_object_( self, selector, "GSDocumentWasSavedSuccessfully", None )
-			
+			NSBundle.loadNibNamed_owner_("GlyphsGitDialog", self)
+			selector = objc.selector(self.documentWasSaved_, signature=b"v@:@")
+			NSNotificationCenter.defaultCenter().addObserver_selector_name_object_(self, selector, "GSDocumentWasSavedSuccessfully", None)
+
 			mainMenu = NSApplication.sharedApplication().mainMenu()
-			s = objc.selector(self.showRevisions,signature='v@:')
-			self.revisionMenuItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("View revision history", s, "" )
+			s = objc.selector(self.showRevisions_, signature=b'v@:')
+			self.revisionMenuItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("View revision history", s, "")
 			self.revisionMenuItem.setTarget_(self)
 			index = 0
 			numberOfSeperators = 0
@@ -67,19 +68,19 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 				index += 1;
 			mainMenu.itemAtIndex_(1).submenu().insertItem_atIndex_(self.revisionMenuItem, index)
 			return None
-		except Exception, err:
-			self.logToConsole( "init: %s" % traceback.format_exc() )
-	
-	def __del__( self ):
+		except Exception as err:
+			self.logToConsole("init: %s" % traceback.format_exc())
+
+	def __del__(self):
 		"""
 		Remove all observers you added in init().
 		"""
 		try:
-			NSNotificationCenter.defaultCenter().removeObserver_( self )
+			NSNotificationCenter.defaultCenter().removeObserver_(self)
 		except Exception as e:
-			self.logToConsole( "__del__: %s" % str(e) )
-	
-	def interfaceVersion( self ):
+			self.logToConsole("__del__: %s" % str(e))
+
+	def interfaceVersion(self):
 		"""
 		Distinguishes the API version the plugin was built for. 
 		Return 1.
@@ -87,9 +88,9 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 		try:
 			return 1
 		except Exception as e:
-			self.logToConsole( "interfaceVersion: %s" % str(e) )
-	
-	def documentWasSaved( self, sender ):
+			self.logToConsole("interfaceVersion: %s" % str(e))
+
+	def documentWasSaved_(self, sender):
 		"""
 		Called when the font is saved
 		assuming GSDocumentWasSavedSuccessfully was added to the observer
@@ -114,9 +115,9 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 				None
 			)
 		except Exception as e:
-			self.logToConsole( "documentWasSaved: %s" % str(e) )
+			self.logToConsole("documentWasSaved: %s" % str(e))
 
-	def setupStupidMessage( self ):
+	def setupStupidMessage(self):
 		stupidMessages = [
 			"Pushed some points around.",
 			"Reticulated splines.",
@@ -130,21 +131,22 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 			self._runGit(["commit", "-m", self.sheetTextarea.stringValue() ])
 			os.chdir(self.oldCwd)
 		except Exception as e:
-			self.logToConsole( "Git failed (probably no change since last commit): %s" % str(e) )
+			self.logToConsole("Git failed (probably no change since last commit): %s" % str(e))
 		try:
 			NSApp.endSheet_(self.sheetPanel())
 			self.sheetPanel().orderOut_(self)
 		except Exception as e:
-			self.logToConsole( "buttonPushed_: %s" % str(e) )
-	
+			self.logToConsole("buttonPushed_: %s" % str(e))
+
 	@objc.IBAction
 	def canelPushed_ (self, sender):
 		try:
 			NSApp.endSheet_(self.sheetPanel())
 			self.sheetPanel().orderOut_(self)
 		except Exception as e:
-			self.logToConsole( "buttonPushed_: %s" % str(e) )
+			self.logToConsole("buttonPushed_: %s" % str(e))
 
+	@objc.python_method
 	def alert(self, message="Default Message", info_text="", buttons=["OK"]):
 		alert = NSAlert.alloc().init()
 		alert.setMessageText_(message)
@@ -159,34 +161,37 @@ class glyphsGit ( NSObject, GlyphsPluginProtocol ):
 			None)
 		return alert
 
-	def _runGit (self, args):
+	@objc.python_method
+	def _runGit(self, args):
 		gitPath = spawn.find_executable("git")
 		if not gitPath:
 			self.alert("Could not find git executable", "Did you install git?", ["Dismiss"])
 		args.insert(0, gitPath)
+		print(args)
 		spawn.spawn(args)
 
-	@objc.signature('v@:@ii')
+	@objc.signature(b'v@:@ii')
 	def alertDidEnd_returnCode_contextInfo_(self, sheet, returnCode, info):
 		return
-	
+
 	def validateMenuItem_(self, item):
-		print "__validateMenuItem_1"
+		print("__validateMenuItem_1")
 		if self.revisionMenuItem == item:
 			# check if current font is under version control
 			# if not, return False
-			print "__validateMenuItem_2"
+			print("__validateMenuItem_2")
 			pass
 		return True
-	
-	def showRevisions(self, sender):
+
+	def showRevisions_(self, sender):
 		GlyphsGitList.GitList()
-		
-	def logToConsole( self, message ):
+
+	@objc.python_method
+	def logToConsole(self, message):
 		"""
 		The variable 'message' will be passed to Console.app.
-		Use self.logToConsole( "bla bla" ) for debugging.
+		Use self.logToConsole("bla bla") for debugging.
 		"""
-		myLog = "%s:\n%s" % ( self.__class__.__name__, message )
-		NSLog( myLog )
+		myLog = "%s:\n%s" % (self.__class__.__name__, message)
+		NSLog(myLog)
 
