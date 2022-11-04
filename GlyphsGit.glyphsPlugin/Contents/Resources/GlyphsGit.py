@@ -4,8 +4,7 @@
 from __future__ import print_function
 import objc
 import traceback
-from Foundation import *
-from AppKit import *
+from AppKit import NSBundle, NSApp, NSNotificationCenter, NSMenuItem, NSLog
 import sys, os, re
 from distutils import spawn
 import random
@@ -54,7 +53,7 @@ class glyphsGit (GeneralPlugin):
 			selector = objc.selector(self.documentWasSaved_, signature=b"v@:@")
 			NSNotificationCenter.defaultCenter().addObserver_selector_name_object_(self, selector, "GSDocumentWasSavedSuccessfully", None)
 
-			mainMenu = NSApplication.sharedApplication().mainMenu()
+			mainMenu = NSApp.mainMenu()
 			s = objc.selector(self.showRevisions_, signature=b'v@:')
 			self.revisionMenuItem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_("View revision history", s, "")
 			self.revisionMenuItem.setTarget_(self)
@@ -109,7 +108,7 @@ class glyphsGit (GeneralPlugin):
 			self.setupStupidMessage()
 			NSApp.beginSheet_modalForWindow_modalDelegate_didEndSelector_contextInfo_(
 				self.sheetPanel(),
-				NSApplication.sharedApplication().mainWindow(),
+				NSApp.mainWindow(),
 				self,
 				self.alertDidEnd_returnCode_contextInfo_,
 				None
@@ -155,7 +154,7 @@ class glyphsGit (GeneralPlugin):
 		for button in buttons:
 				alert.addButtonWithTitle_(button)
 		self.logToConsole(self.sheetPanel)
-		alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(NSApplication.sharedApplication().mainWindow(),
+		alert.beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo_(NSApp.mainWindow(),
 			self,
 			'alertDidEnd:returnCode:contextInfo:',
 			None)
@@ -167,7 +166,7 @@ class glyphsGit (GeneralPlugin):
 		if not gitPath:
 			self.alert("Could not find git executable", "Did you install git?", ["Dismiss"])
 		args.insert(0, gitPath)
-		print(args)
+		#print(args)
 		spawn.spawn(args)
 
 	@objc.signature(b'v@:@ii')
@@ -175,11 +174,11 @@ class glyphsGit (GeneralPlugin):
 		return
 
 	def validateMenuItem_(self, item):
-		print("__validateMenuItem_1")
+		#print("__validateMenuItem_1")
 		if self.revisionMenuItem == item:
 			# check if current font is under version control
 			# if not, return False
-			print("__validateMenuItem_2")
+			#print("__validateMenuItem_2")
 			pass
 		return True
 
